@@ -26,4 +26,4 @@ Aşağıdaki kutular proje ilerledikçe işaretlenir.
 
 - [x] `npm run build` doğrulandı
 - [x] Hosting notları (`README.md`)
-- [ ] Git etiketi `v0.1.0` (yerelde: `git tag v0.1.0` — kullanıcı repoda çalıştırır)
+- [x] Git etiketi `v0.1.0` (yerelde oluşturuldu; uzak: `git push origin v0.1.0`)
