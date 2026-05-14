@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Osmanlıca Savunması: GÜVENLİ MOD</title>
+    <style>
+        :root { --bg: #020205; --accent: #ff004c; --wall: #00f2ff; }
+        
+        body { 
+            margin: 0; overflow: hidden; 
+            font-family: 'Courier New', Courier, monospace; 
+            background: var(--bg); color: white; user-select: none; 
+        }
+        
+        #game-container { 
+            position: relative; width: 100vw; height: 100vh; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        }
+        
+        #question-card { 
+            background: #0a0a0a; padding: 20px; border-radius: 12px; text-align: center; 
+            z-index: 10; width: 450px; border: 4px solid var(--accent); 
+            box-shadow: 0 0 30px var(--accent);
+        }
+
+        .option { 
+            display: block; width: 100%; padding: 10px; margin: 4px 0; 
+            background: #151515; border: 1px solid #333; color: #eee; 
+            border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s;
+        }
+
+        .damaged { opacity: 0.03; filter: blur(10px); pointer-events: none; }
+        
+        /* Hilal Bariyer Düzenlemesi */
+        .wall {
+            position: absolute; 
+            width: 85px; height: 35px; 
+            border: 6px solid var(--wall);
+            border-bottom: none; 
+            border-radius: 50px 50px 0 0; 
+            box-shadow: 0 -5px 15px var(--wall);
+            z-index: 5; pointer-events: none;
+            transform-origin: center bottom;
+            transition: opacity 0.3s;
+        }
+
+        .wall-cracked {
+            opacity: 0.4;
+            border-style: dotted;
+            box-shadow: 0 -5px 5px var(--wall);
+        }
+
+        .skeleton { 
+            position: absolute; width: 70px; height: 70px; padding: 15px;
+            background: url('https://cdn-icons-png.flaticon.com/512/1141/1141971.png') no-repeat center; 
+            background-size: contain; z-index: 50; filter: hue-rotate(300deg) drop-shadow(0 0 15px red);
+            cursor: pointer;
+        }
+
+        #ui { position: absolute; top: 20px; width: 90%; display: flex; justify-content: space-between; font-size: 22px; z-index: 100; font-weight: bold; }
+        #wall-info { color: var(--wall); }
+
+        /* Epilepsi Uyarısı Şeridi */
+        #warning-bar {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(255, 0, 0, 0.8); color: white;
+            text-align: center; padding: 5px 0; font-size: 12px;
+            font-weight: bold; z-index: 200; letter-spacing: 1px;
+            border-top: 2px solid white;
+        }
+
+        #flash-layer { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: white; z-index: 1000; }
+        .ultra-flash { animation: flash-trigger 0.8s ease-out forwards; }
+        @keyframes flash-trigger {
+            0% { opacity: 1; filter: brightness(5); }
+            20% { opacity: 1; filter: invert(1) brightness(10); }
+            100% { opacity: 0; filter: brightness(1); }
+        }
+        .shake { animation: shake-anim 0.1s infinite; }
+        @keyframes shake-anim {
+            0% { transform: translate(5px, 5px); }
+            50% { transform: translate(-5px, -5px); }
+            100% { transform: translate(0, 0); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="flash-layer"></div>
+<div id="game-container">
+    <div id="ui">
+        <div>SEVİYE: <span id="score">0</span></div>
+        <div id="wall-info">SAVUNMA: <span id="wall-count">0</span> / 20</div>
+        <div style="color: var(--accent)">HASAR: <span id="damage">0</span> / 5</div>
+    </div>
+    
+    <div id="question-card">
+        <h2 id="word" style="color: gold;">OSMANLICA SAVUNMASI</h2>
+        <div id="options"></div>
+    </div>
+
+    <div id="warning-bar">
+        ⚠️ DİKKAT: BU OYUN YÜKSEK IŞIKLI FLAŞ EFEKTLERİ İÇERİR. FOTOSENSİTİF EPİLEPSİSİ OLANLARIN DİKKATLİ OLMASI ÖNERİLİR.
+    </div>
+</div>
+
+<script>
+    const kelimeler = [
+        { q: "Külliye", a: "Camii etrafında sosyal yapılar topluluğu" },
+        { q: "Şifahane", a: "Hastaların tedavi edildiği yer" },
+        { q: "Medrese", a: "İslami ve bilimsel eğitim verilen okul" },
+        { q: "İmaret", a: "Fakirlere ücretsiz yemek verilen yer" },
+        { q: "Darülaceze", a: "Yaşlı ve düşkünlere barınma hizmeti sunulan yer" },
+        { q: "Darüleytam", a: "Yetim çocukların barındığı yer" },
+        { q: "Kervansaray", a: "Yolculuk edenlerin konakladığı büyük han" },
+        { q: "Han", a: "Tüccarların konakladığı ve ticaret yaptığı yapı" },
+        { q: "Ribat", a: "Hem karakol hem misafirhane olarak kullanılan yapı" },
+        { q: "Zaviye", a: "Tarikat ve dervişlerin eğitim/ibadet yeri" },
+        { q: "Kasr", a: "Küçük saray veya köşk" },
+        { q: "Saray", a: "Padişah veya yönetici konağı" },
+        { q: "Sıbyan Mektebi", a: "Temel eğitim verilen ilkokul" },
+        { q: "Darülbedayi", a: "Osmanlı’da tiyatro ve sahne sanatları okulu" },
+        { q: "Darülfünun", a: "Osmanlı döneminde üniversite" },
+        { q: "Bedesten", a: "Değerli malların satıldığı üstü kapalı çarşı" },
+        { q: "Arasta", a: "Aynı tür esnafların yan yana sıralandığı çarşı bölümü" },
+        { q: "Sebil", a: "Ücretsiz içme suyu dağıtılan küçük yapı" },
+        { q: "Mihrap", a: "Camide kıble yönünü gösteren niş" }
+    ];
+
+    let currentIdx = 0, score = 0, damage = 0, wallCount = 0;
+    let isCPressed = false, mouseX = 0, mouseY = 0;
+    const maxWalls = 20;
+    let spawnRate = 1000, moveSpeed = 5.2;
+
+    document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+    document.addEventListener('keydown', e => { if(e.key.toLowerCase() === 'c') isCPressed = true; });
+    document.addEventListener('keyup', e => { if(e.key.toLowerCase() === 'c') isCPressed = false; });
+
+    function init() {
+        if(currentIdx >= kelimeler.length) { alert("TEBRİKLER!"); location.reload(); return; }
+        damage = 0; 
+        document.getElementById('damage').innerText = damage;
+        if(score >= 5) { spawnRate = 500; moveSpeed = 9.0; }
+
+        const item = kelimeler[currentIdx];
+        document.getElementById('word').innerText = item.q;
+        const optsDiv = document.getElementById('options');
+        optsDiv.innerHTML = '';
+
+        let choices = [item.a];
+        while(choices.length < 6) {
+            let r = kelimeler[Math.floor(Math.random()*kelimeler.length)].a;
+            if(!choices.includes(r)) choices.push(r);
+        }
+        choices.sort(() => Math.random() - 0.5);
+
+        choices.forEach(c => {
+            const b = document.createElement('button');
+            b.className = 'option';
+            b.innerText = c;
+            b.dataset.correct = (c === item.a);
+            b.onclick = () => {
+                if(c === item.a) { score++; currentIdx++; document.getElementById('score').innerText = score; init(); }
+                else { triggerUltraFlash("YANLIŞ CEVAP!"); }
+            };
+            optsDiv.appendChild(b);
+        });
+    }
+
+    setInterval(() => {
+        if(isCPressed && score >= 5 && wallCount < maxWalls) {
+            const wall = document.createElement('div');
+            wall.className = 'wall';
+            wall.dataset.hits = 2;
+            wall.style.left = (mouseX - 42) + 'px';
+            wall.style.top = (mouseY - 17) + 'px';
+            
+            const dx = mouseX - window.innerWidth/2;
+            const dy = mouseY - window.innerHeight/2;
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            wall.style.transform = `rotate(${angle + 90}deg)`;
+
+            document.body.appendChild(wall);
+            wallCount++;
+            document.getElementById('wall-count').innerText = wallCount;
+        }
+    }, 65);
+
+    function triggerUltraFlash(msg) {
+        const flash = document.getElementById('flash-layer');
+        const container = document.getElementById('game-container');
+        flash.style.display = 'block';
+        flash.classList.add('ultra-flash');
+        container.classList.add('shake');
+        setTimeout(() => { alert(msg); location.reload(); }, 350);
+    }
+
+    function spawn() {
+        const skel = document.createElement('div');
+        skel.className = 'skeleton';
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.max(window.innerWidth, window.innerHeight);
+        skel.style.left = window.innerWidth/2 + Math.cos(angle) * radius + 'px';
+        skel.style.top = window.innerHeight/2 + Math.sin(angle) * radius + 'px';
+        
+        skel.onmousedown = (e) => { e.preventDefault(); skel.remove(); };
+        document.getElementById('game-container').appendChild(skel);
+
+        const move = setInterval(() => {
+            if(!skel.parentElement) { clearInterval(move); return; }
+            const card = document.getElementById('question-card').getBoundingClientRect();
+            const sx = parseFloat(skel.style.left), sy = parseFloat(skel.style.top);
+            const dx = (card.left + card.width/2) - sx, dy = (card.top + card.height/2) - sy;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            skel.style.left = (sx + (dx/dist) * moveSpeed) + 'px';
+            skel.style.top = (sy + (dy/dist) * moveSpeed) + 'px';
+
+            document.querySelectorAll('.wall').forEach(w => {
+                const wr = w.getBoundingClientRect(), sr = skel.getBoundingClientRect();
+                if(!(wr.right < sr.left || wr.left > sr.right || wr.bottom < sr.top || wr.top > sr.bottom)) {
+                    let hits = parseInt(w.dataset.hits);
+                    hits--;
+                    w.dataset.hits = hits;
+                    if(hits === 1) w.classList.add('wall-cracked');
+                    else if (hits <= 0) { w.remove(); wallCount--; document.getElementById('wall-count').innerText = wallCount; }
+                    skel.remove();
+                    clearInterval(move);
+                }
+            });
+
+            document.querySelectorAll('.option').forEach(opt => {
+                if(opt.classList.contains('damaged') || opt.dataset.correct === "true") return; 
+                const r = opt.getBoundingClientRect(), s = skel.getBoundingClientRect();
+                if (!(r.right < s.left || r.left > s.right || r.bottom < s.top || r.top > s.bottom)) {
+                    opt.classList.add('damaged');
+                    damage++;
+                    document.getElementById('damage').innerText = damage;
+                    if(damage >= 5) triggerUltraFlash("OYUN BİTTİ!");
+                    skel.remove(); clearInterval(move);
+                }
+            });
+        }, 20);
+    }
+
+    setInterval(() => spawn(), spawnRate);
+    init();
+</script>
+</body>
+</html>
