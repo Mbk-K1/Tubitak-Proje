@@ -10,8 +10,8 @@ export class PlayScene extends Phaser.Scene {
   private platforms!: Phaser.Physics.Arcade.StaticGroup;
   private spikes!: Phaser.Physics.Arcade.StaticGroup;
   private finishRect!: Phaser.GameObjects.Rectangle;
-  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private jumpKey!: Phaser.Input.Keyboard.Key;
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private jumpKey?: Phaser.Input.Keyboard.Key;
   private pendingPointerJump = false;
   private music?: Phaser.Sound.BaseSound;
   private isDead = false;
@@ -110,10 +110,11 @@ export class PlayScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.12, 0.08, -120, 0);
     this.cameras.main.setBackgroundColor('#120f1a');
 
-    this.cursors = this.input.keyboard!.createCursorKeys();
-    this.jumpKey = this.input.keyboard!.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE,
-    );
+    const kb = this.input.keyboard;
+    if (kb) {
+      this.cursors = kb.createCursorKeys();
+      this.jumpKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    }
 
     this.input.on('pointerdown', () => {
       this.pendingPointerJump = true;
@@ -145,8 +146,8 @@ export class PlayScene extends Phaser.Scene {
     body.setVelocityX(this.level.playerSpeed);
 
     const keyJump =
-      Phaser.Input.Keyboard.JustDown(this.jumpKey) ||
-      Phaser.Input.Keyboard.JustDown(this.cursors.up!);
+      (this.jumpKey && Phaser.Input.Keyboard.JustDown(this.jumpKey)) ||
+      (!!this.cursors?.up && Phaser.Input.Keyboard.JustDown(this.cursors.up));
     const wantsJump = keyJump || this.pendingPointerJump;
     if (wantsJump && (body.blocked.down || body.touching.down)) {
       body.setVelocityY(-520);

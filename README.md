@@ -18,7 +18,16 @@ npm run build
 npm run preview
 ```
 
-`npm run build` çıktısı `dist/` klasöründedir; statik barındırma (GitHub Pages, Netlify vb.) için bu klasörü yayınlayın. `vite.config.ts` içinde `base: './'` kullanıldığından alt klasörden de açılabilir.
+`npm run build` çıktısı `dist/` klasöründedir; statik barındırma için **yayınlanması gereken bu klasördür**, proje kökündeki `index.html` + `/src/main.ts` GitHub Pages’te çalışmaz (beyaz ekran).
+
+### GitHub Pages (beyaz ekran olmaması için)
+
+1. GitHub’da repo → **Settings** → **Pages**.
+2. **Build and deployment** → Source: **GitHub Actions** (branch’ten “Deploy from branch / root” kullanmayın; o zaman derlenmemiş kaynak gider).
+3. `main`e push edince [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml) `dist` üretir ve yayınlar.
+4. Adres genelde `https://<kullanıcı>.github.io/<depo-adı>/` olur; `vite.config.ts` GitHub Actions ortamında `GITHUB_REPOSITORY` ile `base` yolunu buna göre ayarlar.
+
+Özel alan adı veya `kullanici.github.io` kök deposu kullanıyorsanız `base` için `vite.config.ts` içinde kendi kuralınızı eklemeniz gerekebilir.
 
 ## Proje yapısı
 

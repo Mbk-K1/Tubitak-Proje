@@ -12,7 +12,9 @@ export class ResultScene extends Phaser.Scene {
   }
 
   create(data: ResultInit): void {
-    const { level } = data;
+    const level = data?.level;
+    if (!level) return;
+
     const related = terms.filter((t) => level.relatedTermSlugs.includes(t.slug));
 
     this.cameras.main.setScroll(0, 0);
@@ -57,7 +59,7 @@ export class ResultScene extends Phaser.Scene {
     }
 
     this.add
-      .text(400, 470, 'Çıkmak için Enter veya Esc', {
+      .text(400, 470, 'Çıkmak için Enter, Esc veya ekrana dokun', {
         fontFamily: 'Outfit, system-ui',
         fontSize: '15px',
         color: '#94a3b8',
@@ -65,8 +67,11 @@ export class ResultScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     const exit = this.registry.get('onGameExit') as (() => void) | undefined;
-    const kb = this.input.keyboard!;
-    kb.once('keydown-ENTER', () => exit?.());
-    kb.once('keydown-ESC', () => exit?.());
+    const doExit = () => exit?.();
+
+    const kb = this.input.keyboard;
+    kb?.once('keydown-ENTER', doExit);
+    kb?.once('keydown-ESC', doExit);
+    this.input.once('pointerdown', doExit);
   }
 }
