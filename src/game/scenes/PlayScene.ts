@@ -72,7 +72,7 @@ export class PlayScene extends Phaser.Scene {
       this.spikes.add(spike);
     }
 
-    this.platforms.refresh(true);
+    this.platforms.refresh();
 
     this.player = this.physics.add.image(
       this.level.spawn.x,
@@ -161,11 +161,18 @@ export class PlayScene extends Phaser.Scene {
   private handleDeath(): void {
     if (this.isDead) return;
     this.isDead = true;
-    this.cameras.main.flash(120, 80, 20, 20, false, (_cam, progress) => {
-      if (progress === 1) {
-        this.respawn();
-      }
-    });
+    this.cameras.main.flash(
+      120,
+      80,
+      20,
+      20,
+      false,
+      (_cam: Phaser.Cameras.Scene2D.Camera, progress: number) => {
+        if (progress === 1) {
+          this.respawn();
+        }
+      },
+    );
   }
 
   private respawn(): void {

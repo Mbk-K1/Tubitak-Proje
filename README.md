@@ -5,6 +5,7 @@
 ## Gereksinimler
 
 - Node.js 20+ ve npm (geliştirme ve derleme için)
+- IDE’de `Cannot find module 'phaser'` görürseniz depo kökünde `npm install` çalıştırın; `phaser` paketi `node_modules` altına iner ve türler paketle birlikte gelir.
 
 ## Komutlar
 
