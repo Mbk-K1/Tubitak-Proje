@@ -24,6 +24,6 @@ Aşağıdaki kutular proje ilerledikçe işaretlenir.
 
 ## Faz 4 — Yayın
 
-- [x] `npm run build` doğrulandı
+- [ ] `npm run build` (yerel makinede Node/npm ile doğrulayın)
 - [x] Hosting notları (`README.md`)
 - [x] Git etiketi `v0.1.0` (yerelde oluşturuldu; uzak: `git push origin v0.1.0`)

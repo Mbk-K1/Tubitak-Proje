@@ -8,6 +8,8 @@
 
 ## Komutlar
 
+> Not: Bazı ortamlarda yalnızca Node bulunup npm bulunmayabilir; klonladıktan sonra `npm run build` ile derlemeyi yerelde doğrulayın.
+
 ```bash
 npm install
 npm run dev
